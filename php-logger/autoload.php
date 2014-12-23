@@ -1,7 +1,7 @@
 <?php 
-spl_autoload_register('nameSpaceLoader');
+spl_autoload_register('ConsolariNameSpaceLoader');
 
-function nameSpaceLoader($cls)
+function ConsolariNameSpaceLoader($cls)
 {
     $cls = trim($cls, "\\");
      
