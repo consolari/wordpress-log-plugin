@@ -21,7 +21,7 @@ class ConsolariHelper
 
     public function __construct()
     {
-        require __DIR__.'/php-logger/autoload.php';
+        require __DIR__.'/vendor/autoload.php';
 
         /*
          * Get custom options from backend settings
