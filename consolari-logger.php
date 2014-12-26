@@ -32,6 +32,13 @@ class ConsolariHelper
             return;
         }
 
+
+        /*
+         * Hook registration
+         */
+        register_activation_hook( __FILE__, array( $this, 'activate' ) );
+        register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
+
         /*
          * Initiate session
          */
@@ -81,6 +88,8 @@ class ConsolariHelper
     {
         global $wpdb;
 
+        //print_R($wpdb);die('asdf');
+
         if (!empty($wpdb->queries)) {
             foreach ($wpdb->queries as $query) {
 
@@ -90,7 +99,7 @@ class ConsolariHelper
                 $entry->setLabel('SQL');
 
                 if (isset($query['trace'])) {
-                    $trace = $query['trace']->get_trace();
+                    //$trace = $query['trace']->get_trace();
 
                     /*$context = self::getContext($trace);
 
@@ -102,11 +111,6 @@ class ConsolariHelper
                 $this->logger->addEntry($entry);
             }
         }
-    }
-
-    public function init()
-    {
-        die('test');
     }
 
     public function log($groupName = '', $data = '', $label = 'Data', $dataType = 'none')
@@ -230,6 +234,22 @@ class ConsolariHelper
         $context['language'] = 'php';
 
         return $context;
+    }
+
+    public function activate()
+    {
+        $dbFile = WP_CONTENT_DIR . '/db.php';
+
+        if ( ! file_exists( $dbFile ) and function_exists( 'symlink' ) ) {
+            @symlink( __DIR__ .'/wp-content/db.php', $dbFile);
+        }
+    }
+
+    public function deactivate()
+    {
+        if ( class_exists( 'ConsolariDatabase' ) ) {
+            unlink( WP_CONTENT_DIR . '/db.php' );
+        }
     }
 }
 
