@@ -17,9 +17,32 @@ class ConsolariHelper
 {
     private $logger;
 
+    private $startLogTime;
+
+    private $marker = array();
+
     private $options;
 
-    public function __construct()
+    // Hold an instance of the class
+    private static $instance;
+
+    // The singleton method
+    public static function instance()
+    {
+        if (!isset(self::$instance)) {
+            $c = __CLASS__;
+            self::$instance = new $c;
+        }
+
+        return self::$instance;
+    }
+
+    // Prevent users to clone the instance
+    public function __clone(){
+        trigger_error('Clone is not allowed.', E_USER_ERROR);
+    }
+
+    private function __construct()
     {
         require __DIR__.'/vendor/autoload.php';
 
@@ -31,7 +54,6 @@ class ConsolariHelper
         if (empty($this->options['key']) or empty($this->options['user'])) {
             return;
         }
-
 
         /*
          * Hook registration
@@ -48,12 +70,16 @@ class ConsolariHelper
         $this->logger->setSource($_SERVER['HTTP_HOST']);
         $this->logger->setLevel('message');
         $this->logger->setUrl($_SERVER['REQUEST_URI']);
+
+        $this->startLogTime = microtime(true);
     }
 
 
     public function __destruct()
     {
-        if (empty($this->logger)) {
+        $logger = self::instance()->logger;
+
+        if (empty($logger)) {
             return;
         }
 
@@ -74,9 +100,8 @@ class ConsolariHelper
         $this->log('server', !empty($_FILES)?$_FILES:'no files', 'FILES');
         $this->log('server', $_COOKIE, 'COOKIE');
         $this->log('server', $_SERVER, 'SERVER', 'array');
+        $this->log('server', self::instance()->marker, 'MARKER', 'table');
 //        $this->log('server', self::convertArrayToTable($exceptions, array('Datetime', 'Type', 'Message', 'URI')), 'EXCEPTION LOG', 'table');
-
-        $this->setQueries();
 
         $transport = new Consolari\Transport\Curl();
 
@@ -84,40 +109,15 @@ class ConsolariHelper
         $this->logger->send();
     }
 
-    private function setQueries()
+    public static function log($groupName = '', $data = '', $label = 'Data', $dataType = 'none')
     {
-        global $wpdb;
+        $logger = self::instance()->logger;
 
-        //print_R($wpdb);die('asdf');
-
-        if (!empty($wpdb->queries)) {
-            foreach ($wpdb->queries as $query) {
-
-                $entry = new Consolari\Entries\Query();
-                $entry->setSql($query[0]);
-                $entry->setGroupName('SQL Queries');
-                $entry->setLabel('SQL');
-
-                if (isset($query['trace'])) {
-                    //$trace = $query['trace']->get_trace();
-
-                    /*$context = self::getContext($trace);
-
-                    if (!empty($context)) {
-                        $entry->setContext($context);
-                    }*/
-                }
-
-                $this->logger->addEntry($entry);
-            }
-        }
-    }
-
-    public function log($groupName = '', $data = '', $label = 'Data', $dataType = 'none')
-    {
-        if (empty($this->logger)) {
+        if (empty($logger)) {
             return;
         }
+
+        self::logMarker($groupName.'->'.$label);
 
         $trace = debug_backtrace();
 
@@ -182,7 +182,7 @@ class ConsolariHelper
         $entry->setLabel($label);
         $entry->setContext($context);
 
-        $this->logger->addEntry($entry);
+        $logger->addEntry($entry);
     }
 
 
@@ -191,10 +191,10 @@ class ConsolariHelper
      *
      * @param array $trace
      */
-    public function getContext($trace, $level = 0)
+    public static function getContext($trace, $level = 0)
     {
         $contextLines = 8;
-        $ignoreClasses = array();
+        $ignoreClasses = array('ConsolariDatabase', 'wpdb');
 
         $context = array(
             'file'=>'',
@@ -251,8 +251,95 @@ class ConsolariHelper
             unlink( WP_CONTENT_DIR . '/db.php' );
         }
     }
+
+    public static function logSQL($sql = '', $rows = null, $results = 0)
+    {
+        $logger = self::instance()->logger;
+
+        if (empty($logger)) {
+            return;
+        }
+
+        self::logMarker('SQL->SQL');
+
+        $trace = debug_backtrace();
+
+        $contextData = self::getContext($trace, 0);
+        unset($trace);
+
+        $context = new \Consolari\Context\Context();
+        $context->setFile($contextData['file']);
+        $context->setClass($contextData['class']);
+        $context->setMethod($contextData['method']);
+        $context->setLine($contextData['line']);
+        $context->setCode($contextData['code']);
+        $context->setLanguage($contextData['language']);
+
+        $entry = new Consolari\Entries\Query();
+        $entry->setSql($sql);
+        $entry->setGroupName('SQL');
+        $entry->setLabel('SQL');
+        $entry->setContext($context);
+
+        if (!empty($rows)) {
+            $entry->setRows($rows);
+        }
+
+        $logger->addEntry($entry);
+
+        return;
+    }
+
+    public static function logRequest($group, $action, $wsdl, $params, $requestBody, $requestHeaders, $responseBody, $responseHeaders, $type)
+    {
+        $logger = self::instance()->logger;
+
+        if (empty($logger)) {
+            return;
+        }
+
+        self::logMarker($group.'->'.$action);
+
+        if (!empty($logger)) {
+            $entry = new Consolari\Entries\Request();
+            $entry->setGroupName($group);
+            $entry->setLabel($action);
+            $entry->setUrl($wsdl);
+            $entry->setParams($params);
+            $entry->setRequestBody($requestBody);
+            $entry->setRequestHeader($requestHeaders);
+            $entry->setRequestType($type);
+            $entry->setResponseBody($responseBody);
+            $entry->setResponseHeader($responseHeaders);
+
+            $logger->addEntry($entry);
+        }
+    }
+
+    public static function logSoapObj($action = '', $client, $wsdl = '')
+    {
+        $params = '';
+        $group = $action;
+
+        self::logRequest($group, $action, $wsdl, $params, $client->__getLastRequest(), $client->__getLastRequestHeaders(), $client->__getLastResponse(), $client->__getLastResponseHeaders(), 'POST');
+    }
+
+    public static function logMarker($name = '')
+    {
+        $logger = self::instance()->logger;
+
+        if (empty($logger)) {
+            return;
+        }
+
+        self::instance()->marker[] = array(
+            'name'=>$name,
+            'time'=>round(( microtime(true) - self::instance()->startLogTime), 4),
+            'memory'=>round(memory_get_usage()/1000, 1).'KB',
+        );
+    }
 }
 
 //if ( is_admin() or is_user_logged_in()) {
-$logger = new ConsolariHelper();
+$logger = ConsolariHelper::instance();
 //}
