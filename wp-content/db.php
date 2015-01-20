@@ -15,7 +15,6 @@ class ConsolariDatabase extends wpdb {
 	 */
 	public function __construct( $dbuser, $dbpassword, $dbname, $dbhost )
 	{
-
 		parent::__construct( $dbuser, $dbpassword, $dbname, $dbhost );
 	}
 
@@ -38,6 +37,7 @@ class ConsolariDatabase extends wpdb {
 		if ( defined( 'SAVEQUERIES' ) && SAVEQUERIES ) {
 
 			if (class_exists('ConsolariHelper')) {
+				ConsolariHelper::enableInsights();
 				ConsolariHelper::logSQL($query, $this->last_result, $this->num_rows);
 			}
 		}
@@ -49,4 +49,9 @@ class ConsolariDatabase extends wpdb {
 /*
  * Overwrite original connection
  */
-$wpdb = new ConsolariDatabase( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
+if (is_admin()) {
+	/*
+	 * Activate in admin
+	 */
+	$wpdb = new ConsolariDatabase(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST);
+}

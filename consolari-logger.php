@@ -12,6 +12,25 @@ defined('ABSPATH') or die("No access!");
 
 include_once 'src/admin_menu.php';
 
+class Consolari
+{
+    public function __construct()
+    {
+        add_action( 'init', array( $this, 'init' ), 1 );
+    }
+
+    public function init()
+    {
+        if (is_user_logged_in()) {
+            ConsolariHelper::instance();
+            ConsolariHelper::enableInsights();
+        }
+    }
+}
+
+new Consolari();
+
+
 
 class ConsolariHelper
 {
@@ -26,6 +45,8 @@ class ConsolariHelper
     // Hold an instance of the class
     private static $instance;
 
+    private $logData = false;
+
     // The singleton method
     public static function instance()
     {
@@ -37,6 +58,13 @@ class ConsolariHelper
         return self::$instance;
     }
 
+    public static function enableInsights()
+    {
+        $logger = self::instance()->logger;
+
+        $logger->logData = true;
+    }
+
     // Prevent users to clone the instance
     public function __clone(){
         trigger_error('Clone is not allowed.', E_USER_ERROR);
@@ -44,6 +72,10 @@ class ConsolariHelper
 
     private function __construct()
     {
+//        if (!self::$logData) {
+//            return;
+//        }
+
         require __DIR__.'/vendor/autoload.php';
 
         /*
@@ -74,12 +106,11 @@ class ConsolariHelper
         $this->startLogTime = microtime(true);
     }
 
-
     public function __destruct()
     {
         $logger = self::instance()->logger;
 
-        if (empty($logger)) {
+        if (empty($logger) or !$logger->logData) {
             return;
         }
 
@@ -113,7 +144,7 @@ class ConsolariHelper
     {
         $logger = self::instance()->logger;
 
-        if (empty($logger)) {
+        if (empty($logger) or !$logger->logData) {
             return;
         }
 
@@ -247,7 +278,7 @@ class ConsolariHelper
 
     public function deactivate()
     {
-        if ( class_exists( 'ConsolariDatabase' ) ) {
+        if ( class_exists( 'ConsolariDatabase' ) and file_exists(WP_CONTENT_DIR . '/db.php') ) {
             unlink( WP_CONTENT_DIR . '/db.php' );
         }
     }
@@ -256,7 +287,7 @@ class ConsolariHelper
     {
         $logger = self::instance()->logger;
 
-        if (empty($logger)) {
+        if (empty($logger) or !$logger->logData) {
             return;
         }
 
@@ -294,7 +325,7 @@ class ConsolariHelper
     {
         $logger = self::instance()->logger;
 
-        if (empty($logger)) {
+        if (empty($logger) or !$logger->logData) {
             return;
         }
 
@@ -328,7 +359,7 @@ class ConsolariHelper
     {
         $logger = self::instance()->logger;
 
-        if (empty($logger)) {
+        if (empty($logger) or !$logger->logData) {
             return;
         }
 
@@ -340,6 +371,8 @@ class ConsolariHelper
     }
 }
 
-//if ( is_admin() or is_user_logged_in()) {
-$logger = ConsolariHelper::instance();
+//if ( is_admin_bar_showing()) {
+//    $logger = ConsolariHelper::instance();
 //}
+
+//add_action( 'init', array( 'ConsolariHelper', 'instance' ) );
