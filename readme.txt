@@ -1,6 +1,6 @@
 === Consolari Debug Logger ===
 Contributors: peter_indexed
-Tags: debug, log
+Tags: debug, log, insight
 Donate link:
 Requires at least: 3.0.1
 Tested up to: 4.1
@@ -8,38 +8,38 @@ Stable tag: 0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Logs all available debug information to the Consolari service for easy access and formatting
+Get a deeper insight of your Wordpress installation and view detailed information
 
 == Description ==
-Long description of this great plugin. No characters limit, and you can use markdown.
 
-For backwards compatibility, if this section is missing, the full length of the short description will be used, and
-markdown parsed.
+Log system or custom data and view it in Consolari to archive better formatting of data.
 
-Ordered list:
+Data is only registered when admin is logged into Wordpress. It logs both admin and frontend data.
 
-1. Some feature
-1. Another feature
-1. Something else about the plugin
+Supports pretty formatting of:
 
-Unordered list:
+* XML
+* SQL
+* JSON
+* PHP
+* Arrays
+* HTTP requests with response and requests headers and body
 
-* something
-* something else
-* third thing
+A Consolari account is required so register for a free one on [Consolari website](https://www.consolari.io/)
 
-Link to [WordPress](http://wordpress.org/ "Your favorite software") and one to [Markdown's Syntax Documentation][markdown syntax].
+You can read more about the plugin and the documentation in [Consolari Docs](https://www.consolari.io/v1/wordpress-plugin/)
 
-Titles are optional, naturally.
-
-Asterisks for *emphasis*.
-
-Double it up  for **strong**.
 
 == Installation ==
-Use automatic installer.
+Use automatic installer or download plugin and place it into the plugins folder of your installtion.
+
+It will place a symlink in wp-content/db.php *to* wp-content/plugins/consolari-logger/wp-content/db.php for support of SQL queries and its corresponding data. If other plugins
+has already such file it will not be able to log that data and you need to either make that link manually or remove
+conflicting plugins.
 
 == Frequently Asked Questions ==
+
+None so far:)
 
 == Screenshots ==
 1. The screenshot description corresponds to screenshot-1.(png|jpg|jpeg|gif).
@@ -48,6 +48,6 @@ Use automatic installer.
 
 == Changelog ==
 = 0.1 =
-* Initial release.
+* Initial release of Consolari php logger
 
 == Upgrade Notice ==
