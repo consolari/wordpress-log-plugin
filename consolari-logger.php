@@ -2,7 +2,7 @@
 defined('ABSPATH') or die("No access!");
 /**
  * Plugin Name: Consolari Debug Logger
- * Plugin URI: http://www.consolari.io
+ * Plugin URI: https://www.consolari.io/
  * Description: Logs all available debug information to the Consolari service for easy access and formatting
  * Version: 0.1
  * Author: Peter Sørensen
