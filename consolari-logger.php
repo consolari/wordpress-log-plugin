@@ -12,6 +12,9 @@ defined('ABSPATH') or die("No access!");
 
 include_once 'src/admin_menu.php';
 
+/**
+ * Class Consolari
+ */
 class Consolari
 {
     public function __construct()
@@ -31,7 +34,9 @@ class Consolari
 new Consolari();
 
 
-
+/**
+ * Class ConsolariHelper
+ */
 class ConsolariHelper
 {
     private $logger;
