@@ -99,10 +99,6 @@ class ConsolariHelper
 
     private function __construct()
     {
-//        if (!self::$logData) {
-//            return;
-//        }
-
         require __DIR__.'/vendor/autoload.php';
 
         /*
@@ -129,21 +125,9 @@ class ConsolariHelper
 
     public function __destruct()
     {
-        $logger = self::instance()->logger;
-
-        if (empty($logger) or !$logger->logData) {
+        if (!self::isEnabled()) {
             return;
         }
-
-        /*if(empty($this->log_sql)){
-            $this->log_sql = 'No queries logged';
-        }*/
-
-        /*$file = $_SERVER['DOCUMENT_ROOT'].'/logs/mysql/mysql_log.txt';
-
-        if(file_exists($file)){
-            $this->logGroup('server', '<div style="margin:10px;">'.$this->reverse_log($file).'</div>', 'MySQL ERRORS');
-        }*/
 
         $this->log('server', !empty($_SESSION)?$_SESSION:array(), 'SESSION');
         $this->log('server', !empty($_POST)?$_POST:'no post', 'POST');
@@ -153,7 +137,6 @@ class ConsolariHelper
         $this->log('server', $_COOKIE, 'COOKIE');
         $this->log('server', $_SERVER, 'SERVER', 'array');
         $this->log('server', self::instance()->marker, 'MARKER', 'table');
-//        $this->log('server', self::convertArrayToTable($exceptions, array('Datetime', 'Type', 'Message', 'URI')), 'EXCEPTION LOG', 'table');
 
         $transport = new Consolari\Transport\Curl();
 
@@ -161,13 +144,31 @@ class ConsolariHelper
         $this->logger->send();
     }
 
+    /**
+     * Check to see if we should log and send data
+     *
+     * @return bool
+     */
+    public static function isEnabled()
+    {
+        $obj = self::instance();
+
+        $active = false;
+
+        if (!empty($obj->options['key']) and !empty($obj->logger)) {
+            $active = true;
+        }
+
+        return $obj->logData or $active;
+    }
+
     public static function log($groupName = '', $data = '', $label = 'Data', $dataType = 'none')
     {
-        $logger = self::instance()->logger;
-
-        if (empty($logger) or !$logger->logData) {
+        if (!self::isEnabled()) {
             return;
         }
+
+        $logger = self::instance()->logger;
 
         self::logMarker($groupName.'->'.$label);
 
@@ -290,11 +291,11 @@ class ConsolariHelper
 
     public static function logSQL($sql = '', $rows = null, $results = 0)
     {
-        $logger = self::instance()->logger;
-
-        if (empty($logger) or !$logger->logData) {
+        if (!self::isEnabled()) {
             return;
         }
+
+        $logger = self::instance()->logger;
 
         self::logMarker('SQL->SQL');
 
@@ -328,11 +329,11 @@ class ConsolariHelper
 
     public static function logRequest($group, $action, $wsdl, $params, $requestBody, $requestHeaders, $responseBody, $responseHeaders, $type)
     {
-        $logger = self::instance()->logger;
-
-        if (empty($logger) or !$logger->logData) {
+        if (!self::isEnabled()) {
             return;
         }
+
+        $logger = self::instance()->logger;
 
         self::logMarker($group.'->'.$action);
 
@@ -362,22 +363,14 @@ class ConsolariHelper
 
     public static function logMarker($name = '')
     {
-        $logger = self::instance()->logger;
-
-        if (empty($logger) or !$logger->logData) {
+        if (!self::isEnabled()) {
             return;
         }
 
         self::instance()->marker[] = array(
             'name'=>$name,
             'time'=>round(( microtime(true) - self::instance()->startLogTime), 4),
-            'memory'=>round(memory_get_usage()/1000, 1).'KB',
+            'memory'=>round(memory_get_usage()/1024, 1).'KB',
         );
     }
 }
-
-//if ( is_admin_bar_showing()) {
-//    $logger = ConsolariHelper::instance();
-//}
-
-//add_action( 'init', array( 'ConsolariHelper', 'instance' ) );

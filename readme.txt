@@ -1,7 +1,7 @@
 === Consolari Debug Logger ===
 Contributors: peter_indexed
 Tags: debug, logger, insight, formatter, api, display, consolari
-Requires at least: 3.0.1
+Requires at least: 3.9
 Tested up to: 4.1
 Stable tag: 0.1
 License: GPLv2 or later
