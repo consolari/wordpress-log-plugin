@@ -1,5 +1,4 @@
 <?php
-defined('ABSPATH') or die("No access!");
 /**
  * Plugin Name: Consolari Debug Logger
  * Plugin URI: https://www.consolari.io/
@@ -9,6 +8,7 @@ defined('ABSPATH') or die("No access!");
  * Author URI: http://www.indexed.dk
  * License: GPL2
  */
+defined('ABSPATH') or die("No access!");
 
 include_once 'src/admin_menu.php';
 
