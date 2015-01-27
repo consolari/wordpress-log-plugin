@@ -12,6 +12,12 @@ defined('ABSPATH') or die("No access!");
 
 include_once 'src/admin_menu.php';
 
+/*
+ * Hook registration
+ */
+register_activation_hook( __FILE__, 'Consolari::activate' );
+register_deactivation_hook( __FILE__, 'Consolari::deactivate' );
+
 /**
  * Class Consolari
  */
@@ -27,6 +33,22 @@ class Consolari
         if (is_user_logged_in()) {
             ConsolariHelper::instance();
             ConsolariHelper::enableInsights();
+        }
+    }
+
+    public static function activate()
+    {
+        $dbFile = WP_CONTENT_DIR . '/db.php';
+
+        if ( ! file_exists( $dbFile ) and function_exists( 'symlink' ) ) {
+            @symlink( __DIR__ .'/wp-content/db.php', $dbFile);
+        }
+    }
+
+    public static function deactivate()
+    {
+        if ( class_exists( 'ConsolariDatabase' ) and file_exists(WP_CONTENT_DIR . '/db.php') ) {
+            unlink( WP_CONTENT_DIR . '/db.php' );
         }
     }
 }
@@ -91,12 +113,6 @@ class ConsolariHelper
         if (empty($this->options['key']) or empty($this->options['user'])) {
             return;
         }
-
-        /*
-         * Hook registration
-         */
-        register_activation_hook( __FILE__, array( $this, 'activate' ) );
-        register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
 
         /*
          * Initiate session
@@ -270,22 +286,6 @@ class ConsolariHelper
         $context['language'] = 'php';
 
         return $context;
-    }
-
-    public function activate()
-    {
-        $dbFile = WP_CONTENT_DIR . '/db.php';
-
-        if ( ! file_exists( $dbFile ) and function_exists( 'symlink' ) ) {
-            @symlink( __DIR__ .'/wp-content/db.php', $dbFile);
-        }
-    }
-
-    public function deactivate()
-    {
-        if ( class_exists( 'ConsolariDatabase' ) and file_exists(WP_CONTENT_DIR . '/db.php') ) {
-            unlink( WP_CONTENT_DIR . '/db.php' );
-        }
     }
 
     public static function logSQL($sql = '', $rows = null, $results = 0)
