@@ -1,7 +1,4 @@
 <?php
-/**
- * Plugin Name: Consolari Debug Logger
-*/
 defined( 'ABSPATH' ) or die();
 
 if ( !defined( 'SAVEQUERIES' ) ) {
