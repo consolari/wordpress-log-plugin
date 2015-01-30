@@ -10,8 +10,9 @@
  */
 defined('ABSPATH') or die("No access!");
 
-include_once 'src/admin_menu.php';
-
+if (is_admin()) {
+    include_once 'src/admin_menu.php';
+}
 /*
  * Hook registration
  */
@@ -67,24 +68,56 @@ new Consolari();
 
 
 /**
- * Class ConsolariHelper
+ * Log wrapper to the official \Consolari\Logger and helper for each data type.
+ *
+ * Make it faster to log custom data
  */
 class ConsolariHelper
 {
+    /**
+     * Hold the logger instance
+     * @var \Consolari\Logger
+     */
     private $logger;
 
+    /**
+     * Used for the log marker
+     * @var mixed
+     */
     private $startLogTime;
 
+    /**
+     * Holds all the custom markers
+     * @var array
+     */
     private $marker = array();
 
+    /**
+     * Holds the credentials
+     *
+     * @var array
+     */
     private $options = array();
 
-    // Hold an instance of the class
+    /**
+     * Hold an instance of the class
+     *
+     * @var
+     */
     private static $instance;
 
+    /**
+     * Enable logging
+     *
+     * @var bool
+     */
     private $logData = false;
 
-    // The singleton method
+    /**
+     * The singleton method
+     *
+     * @return mixed
+     */
     public static function instance()
     {
         if (!isset(self::$instance)) {
@@ -95,6 +128,9 @@ class ConsolariHelper
         return self::$instance;
     }
 
+    /**
+     * Enable the logger
+     */
     public static function enableInsights()
     {
         $logger = self::instance()->logger;
@@ -104,21 +140,36 @@ class ConsolariHelper
         }
     }
 
-    // Prevent users to clone the instance
+    /**
+     * Prevent users to clone the instance
+     */
     public function __clone(){
         trigger_error('Clone is not allowed.', E_USER_ERROR);
     }
 
+    /**
+     * Set user credential
+     *
+     * @param $user
+     */
     public static function setUser($user) {
         $obj = self::instance();
         $obj->options['user'] = $user;
     }
 
+    /**
+     * Set key credential
+     *
+     * @param $key
+     */
     public static function setKey($key) {
         $obj = self::instance();
         $obj->options['key'] = $key;
     }
 
+    /**
+     * Private constructor called from instance to create singleton
+     */
     private function __construct()
     {
         /*
@@ -192,6 +243,16 @@ class ConsolariHelper
         return $obj->logData or $active;
     }
 
+    /**
+     * Log wrapper
+     *
+     * @param string $groupName
+     * @param string $data
+     * @param string $label
+     * @param string $dataType
+     *
+     * @throws Exception
+     */
     public static function log($groupName = '', $data = '', $label = 'Data', $dataType = 'none')
     {
         if (!self::isEnabled()) {
@@ -363,6 +424,19 @@ class ConsolariHelper
         return;
     }
 
+    /**
+     * Log wrapper to support data type request. It will log the body request and response
+     *
+     * @param $group
+     * @param $action
+     * @param $wsdl
+     * @param $params
+     * @param $requestBody
+     * @param $requestHeaders
+     * @param $responseBody
+     * @param $responseHeaders
+     * @param $type
+     */
     public static function logRequest($group, $action, $wsdl, $params, $requestBody, $requestHeaders, $responseBody, $responseHeaders, $type)
     {
         if (!self::isEnabled()) {
@@ -389,6 +463,13 @@ class ConsolariHelper
         }
     }
 
+    /**
+     * Log wrapper to support a SOAP request
+     *
+     * @param string $action
+     * @param $client
+     * @param string $wsdl
+     */
     public static function logSoapObj($action = '', $client, $wsdl = '')
     {
         $params = '';
@@ -397,6 +478,12 @@ class ConsolariHelper
         self::logRequest($group, $action, $wsdl, $params, $client->__getLastRequest(), $client->__getLastRequestHeaders(), $client->__getLastResponse(), $client->__getLastResponseHeaders(), 'POST');
     }
 
+    /**
+     * Log marker to get deeper insight of performance. It build a simple table with name, execution time and memoery usage at that point in time.
+     * Its not a special data type in consolari but a home brewed table.
+     *
+     * @param string $name
+     */
     public static function logMarker($name = '')
     {
         if (!self::isEnabled()) {
