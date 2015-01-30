@@ -84,10 +84,7 @@ class Consolari {
 	/**
 	 * Uninstall the plugin
 	 */
-	public function uninstall()	{
-		if ( !defined( 'WP_UNINSTALL_PLUGIN' ) ) {
-			return;
-		}
+	public static function uninstall()	{
 
 		/*
 		 * Delete the options
