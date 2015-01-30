@@ -1,7 +1,7 @@
 === Consolari Debug Logger ===
 Contributors: peter_indexed
 Tags: debug, logger, insight, formatter, api, display, consolari
-Requires at least: 3.9
+Requires at least: 3.1
 Tested up to: 4.1
 Stable tag: 0.1
 License: GPLv2 or later
@@ -38,6 +38,8 @@ In short the syntax is ConsolariHelper::log('group', $_SERVER, 'Server data');
 
 == Installation ==
 Use automatic installer or download plugin and place it into the plugins folder of your installation.
+
+Requires PHP 5.3+
 
 It will place a symlink in wp-content/db.php *to* wp-content/plugins/consolari-logger/wp-content/db.php for support of SQL queries and its corresponding data. If other plugins
 has already such file it will not be able to log that data and you need to either make that link manually or remove

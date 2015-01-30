@@ -42,7 +42,6 @@ class Consolari
                 ConsolariHelper::setUser($options['user']);
             }
 
-//            ConsolariHelper::instance();
             ConsolariHelper::enableInsights();
         }
     }
@@ -100,7 +99,9 @@ class ConsolariHelper
     {
         $logger = self::instance()->logger;
 
-        $logger->logData = true;
+        if (!empty($logger)) {
+            $logger->logData = true;
+        }
     }
 
     // Prevent users to clone the instance
@@ -120,32 +121,38 @@ class ConsolariHelper
 
     private function __construct()
     {
-        require __DIR__.'/vendor/autoload.php';
-
         /*
-         * Get custom options from backend settings
+         * Require PHP5.3 because of namespaces
          */
-//        $this->options = get_option('consolari-options');
-//
-//        if (empty($this->options['key']) or empty($this->options['user'])) {
-//            return;
-//        }
+        $version = phpversion();
 
-        /*
-         * Initiate session
-         */
-        $this->logger = new \Consolari\Logger();
-        $this->logger->setSource($_SERVER['HTTP_HOST']);
-        $this->logger->setLevel('message');
-        $this->logger->setUrl($_SERVER['REQUEST_URI']);
+        $phpOk = version_compare( $version, 5.3, '>=' );
 
-        $this->startLogTime = microtime(true);
+        if (!$phpOk) {
+            $this->logData = false;
+        } else {
+
+            require __DIR__ . '/vendor/autoload.php';
+
+            /*
+             * Initiate session
+             */
+            $this->logger = new \Consolari\Logger();
+            $this->logger->setSource( $_SERVER['HTTP_HOST'] );
+            $this->logger->setLevel( 'message' );
+            $this->logger->setUrl( $_SERVER['REQUEST_URI'] );
+
+            $this->startLogTime = microtime( true );
+        }
     }
 
+    /**
+     * Send data to Consolari
+     *
+     * @throws Exception
+     */
     public function __destruct()
     {
-
-
         if (!self::isEnabled()) {
             return;
         }
@@ -178,7 +185,7 @@ class ConsolariHelper
 
         $active = false;
 
-        if (!empty($obj->options['key']) and !empty($obj->logger)) {
+        if (!empty($obj) and !empty($obj->options['key']) and !empty($obj->logger)) {
             $active = true;
         }
 
@@ -261,7 +268,6 @@ class ConsolariHelper
         $logger->addEntry($entry);
     }
 
-
     /**
      * Get contect of log requestor
      *
@@ -312,6 +318,13 @@ class ConsolariHelper
         return $context;
     }
 
+    /**
+     * Log a SQL query with its result set
+     *
+     * @param string $sql
+     * @param null $rows
+     * @param int $results
+     */
     public static function logSQL($sql = '', $rows = null, $results = 0)
     {
         if (!self::isEnabled()) {
@@ -390,10 +403,16 @@ class ConsolariHelper
             return;
         }
 
+        if (function_exists('memory_get_usage')) {
+            $memory = round(memory_get_usage()/1024, 1).'KB';
+        } else {
+            $memory = 'N/A';
+        }
+
         self::instance()->marker[] = array(
             'name'=>$name,
             'time'=>round(( microtime(true) - self::instance()->startLogTime), 4),
-            'memory'=>round(memory_get_usage()/1024, 1).'KB',
+            'memory'=>$memory,
         );
     }
 }
