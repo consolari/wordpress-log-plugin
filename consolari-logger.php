@@ -21,6 +21,7 @@ if ( is_admin() ) {
 	 */
 	register_activation_hook( __FILE__, 'Consolari::activate' );
 	register_deactivation_hook( __FILE__, 'Consolari::deactivate' );
+	register_uninstall_hook(__FILE__, 'Consolari::uninstall');
 }
 
 include_once 'src/consolari-helper.php';
@@ -78,6 +79,20 @@ class Consolari {
 		if ( class_exists( 'ConsolariDatabase' ) and file_exists( WP_CONTENT_DIR . '/db.php' ) ) {
 			unlink( WP_CONTENT_DIR . '/db.php' );
 		}
+	}
+
+	/**
+	 * Uninstall the plugin
+	 */
+	public function uninstall()	{
+		if ( !defined( 'WP_UNINSTALL_PLUGIN' ) ) {
+			return;
+		}
+
+		/*
+		 * Delete the options
+		 */
+		delete_option( 'consolari-options' );
 	}
 }
 
