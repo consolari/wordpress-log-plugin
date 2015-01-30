@@ -51,10 +51,10 @@ conflicting plugins or conflicting symlink.
 None so far:)
 
 == Screenshots ==
-1. View the _SERVER environment /assets/screenshot-1.png
-2. Quickly get an overview of the execution time and memory consumption /assets/screenshot-2.png
-3. Get a formatted SQL query along with the result set /assets/screenshot-3.png
-4. For easy debugging of the SQL query view the code context of where it was executed /assets/screenshot-4.png
+1. View the _SERVER environment.
+2. Quickly get an overview of the execution time and memory consumption.
+3. Get a formatted SQL query along with the result set.
+4. For easy debugging of the SQL query view the code context of where it was executed.
 
 == Changelog ==
 = 0.1 =
