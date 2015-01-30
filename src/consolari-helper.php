@@ -390,7 +390,7 @@ class ConsolariHelper {
 	 * Log wrapper to support a SOAP request
 	 *
 	 * @param string $action
-	 * @param $client
+	 * @param SoapClient $client
 	 * @param string $wsdl
 	 */
 	public static function logSoapObj( $action = '', $client, $wsdl = '' ) {
