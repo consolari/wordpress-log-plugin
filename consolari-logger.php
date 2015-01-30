@@ -30,8 +30,19 @@ class Consolari
 
     public function init()
     {
-        if (is_user_logged_in()) {
-            ConsolariHelper::instance();
+        if (is_admin() or is_user_logged_in()) {
+
+            $options = get_option('consolari-options');
+
+            if (isset($options['key'])) {
+                ConsolariHelper::setKey($options['key']);
+            }
+
+            if (isset($options['user'])) {
+                ConsolariHelper::setUser($options['user']);
+            }
+
+//            ConsolariHelper::instance();
             ConsolariHelper::enableInsights();
         }
     }
@@ -67,7 +78,7 @@ class ConsolariHelper
 
     private $marker = array();
 
-    private $options;
+    private $options = array();
 
     // Hold an instance of the class
     private static $instance;
@@ -97,6 +108,16 @@ class ConsolariHelper
         trigger_error('Clone is not allowed.', E_USER_ERROR);
     }
 
+    public static function setUser($user) {
+        $obj = self::instance();
+        $obj->options['user'] = $user;
+    }
+
+    public static function setKey($key) {
+        $obj = self::instance();
+        $obj->options['key'] = $key;
+    }
+
     private function __construct()
     {
         require __DIR__.'/vendor/autoload.php';
@@ -104,18 +125,16 @@ class ConsolariHelper
         /*
          * Get custom options from backend settings
          */
-        $this->options = get_option('consolari-options');
-
-        if (empty($this->options['key']) or empty($this->options['user'])) {
-            return;
-        }
+//        $this->options = get_option('consolari-options');
+//
+//        if (empty($this->options['key']) or empty($this->options['user'])) {
+//            return;
+//        }
 
         /*
          * Initiate session
          */
         $this->logger = new \Consolari\Logger();
-        $this->logger->setKey($this->options['key']);
-        $this->logger->setUser($this->options['user']);
         $this->logger->setSource($_SERVER['HTTP_HOST']);
         $this->logger->setLevel('message');
         $this->logger->setUrl($_SERVER['REQUEST_URI']);
@@ -125,6 +144,8 @@ class ConsolariHelper
 
     public function __destruct()
     {
+
+
         if (!self::isEnabled()) {
             return;
         }
@@ -140,6 +161,8 @@ class ConsolariHelper
 
         $transport = new Consolari\Transport\Curl();
 
+        $this->logger->setKey($this->options['key']);
+        $this->logger->setUser($this->options['user']);
         $this->logger->setTransport($transport);
         $this->logger->send();
     }
