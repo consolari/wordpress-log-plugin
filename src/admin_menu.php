@@ -26,7 +26,7 @@ function consolari_admin_init()
  */
 function consolari_section_text()
 {
-    echo '<p>Enter credentials here from Consolari account.</p>';
+    echo '<p>Enter credentials here from Consolari account (<a href="https://www.consolari.io/" target="_blank">Create new</a>).<br>The <a href="https://www.consolari.io/v1/wordpress-plugin/" target="_blank">documentation</a> on plugin.</p>';
 }
 
 /**
@@ -41,7 +41,7 @@ function consolari_setting_user()
 function consolari_setting_key()
 {
     $options = get_option('consolari-options');
-    echo "<input id='plugin_text_string' name='consolari-options[key]' size='40' maxlength='100' type='text' value='{$options['key']}' />";
+    echo "<input id='plugin_text_string' name='consolari-options[key]' size='40' maxlength='32' type='text' value='{$options['key']}' />";
 }
 
 /**
